@@ -5,7 +5,7 @@
     android:id="@+id/touch"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:enableTouches="false"
+    app:enableTouches="true"
     app:randomizeColors="true"
     tools:context=".MainActivity"
     >
