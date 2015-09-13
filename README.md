@@ -27,30 +27,5 @@ because its fun!!!
 </com.rajasharan.layout.MultiTouchLayout>
 ```
 
-#### Setup `OnPictureTakenListener` to receive Bitmap
-[MainActivity.java](/demo/src/main/java/com/rajasharan/camerapeekpreview/MainActivity.java)
-```java
-public class MainActivity extends AppCompatActivity implements CameraPeekPreview.OnPictureTakenListener {
-
-    private ImageView mImageView;
-    private CameraPeekPreview mRoot;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        mImageView = (ImageView) findViewById(R.id.imageview);
-        mRoot = (CameraPeekPreview) findViewById(R.id.camera_peek);
-        mRoot.setOnPictureTakenListener(this);
-    }
-
-    @Override
-    public void onPictureTaken(Bitmap bitmap) {
-        mImageView.setImageBitmap(bitmap);
-    }
-}
-```
-
 ## [License](/LICENSE)
     The MIT License (MIT)
