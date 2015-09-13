@@ -1,6 +1,7 @@
 package com.rajasharan.layout;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -13,16 +14,24 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 
+import com.rajasharan.multitouchlayout.R;
+
+import java.util.Random;
+
 /**
  * Created by rajasharan on 8/14/15.
  */
 public class MultiTouchLayout extends ViewGroup {
     private static final String TAG = "TouchLayout";
+    private static final int ALPHA = 128;
 
-    private Paint mBubblePaint;
+    private Paint [] mBubblePaint;
     private SparseArray<Point> mTouches;
     private int mRadius;
     private ViewConfiguration mViewConfig;
+    private boolean mTouchesEnabled;
+    private boolean mRandomizeColors;
+    private int mBubbleColor;
 
     public MultiTouchLayout(Context context) {
         this(context, null);
@@ -34,19 +43,49 @@ public class MultiTouchLayout extends ViewGroup {
 
     public MultiTouchLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init(context);
+        init(context, attrs);
     }
 
-    private void init(Context context) {
-        mBubblePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mBubblePaint.setStyle(Paint.Style.STROKE);
-        mBubblePaint.setStrokeWidth(20f);
-        mBubblePaint.setColor(Color.argb(128, 128, 128, 128));
+    private void init(Context context, AttributeSet attrs) {
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.MultiTouchLayout);
+        mTouchesEnabled = a.getBoolean(R.styleable.MultiTouchLayout_enableTouches, false);
+        mBubbleColor = a.getColor(R.styleable.MultiTouchLayout_setColor, -1);
+        mRandomizeColors = a.getBoolean(R.styleable.MultiTouchLayout_randomizeColors, true);
+        a.recycle();
+
+        mBubblePaint = new Paint[10];
+        for (int i=0; i<10; i++) {
+            mBubblePaint[i] = new Paint(Paint.ANTI_ALIAS_FLAG);
+            mBubblePaint[i].setStyle(Paint.Style.STROKE);
+            mBubblePaint[i].setStrokeWidth(20f);
+            if (mBubbleColor == -1) {
+                if (mRandomizeColors) {
+                    mBubblePaint[i].setColor(randomColor(i));
+                }
+                else {
+                    mBubblePaint[i].setColor(Color.GRAY);
+                    mBubblePaint[i].setAlpha(ALPHA);
+                }
+            }
+            else {
+                mBubblePaint[i].setColor(mBubbleColor);
+                mBubblePaint[i].setAlpha(ALPHA);
+            }
+        }
+
         mRadius = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 55,
                 context.getResources().getDisplayMetrics());
         mTouches = new SparseArray<>(10);
 
         mViewConfig = ViewConfiguration.get(context);
+    }
+
+    public void setTouchesEnabled(boolean enable) {
+        mTouchesEnabled = enable;
+    }
+
+    public boolean isTouchEnabled() {
+        return mTouchesEnabled;
     }
 
     @Override
@@ -71,13 +110,13 @@ public class MultiTouchLayout extends ViewGroup {
         super.dispatchDraw(canvas);
         for (int i=0; i<mTouches.size(); i++) {
             Point p = mTouches.valueAt(i);
-            canvas.drawCircle(p.x, p.y, mRadius, mBubblePaint);
+            canvas.drawCircle(p.x, p.y, mRadius, mBubblePaint[i]);
         }
     }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        return true;
+        return mTouchesEnabled;
     }
 
     @Override
@@ -133,5 +172,10 @@ public class MultiTouchLayout extends ViewGroup {
     private void invalidate(Point p) {
         int offset = mRadius+20;
         invalidate(p.x-offset, p.y-offset, p.x+offset, p.y+offset);
+    }
+
+    private int randomColor(int i) {
+        Random random = new Random((i+1) * Integer.MAX_VALUE);
+        return Color.argb(ALPHA, random.nextInt(256), random.nextInt(256), random.nextInt(256));
     }
 }
